@@ -100,7 +100,7 @@ def change_group(message):
 def request_university_degree(message):
     user_id = message.chat.id
     if user_id not in ADMINS:
-        bot.send_message(user_id, "You don't have permission to add a schedule.")
+        bot.send_message(user_id, "You don't have permission to add a schedule. Please contact with the admins")
         return
     bot.send_message(user_id, "Please enter the university name:")
     bot.register_next_step_handler(message, handle_university_name)
@@ -174,7 +174,6 @@ def parse_excel_to_json(file_path):
 
     return parsed_schedule
 
-
 def show_universities(message):
     markup = telebot.types.ReplyKeyboardMarkup(one_time_keyboard=True, row_width=2, resize_keyboard=True)
     universities = list(schedules.keys())
@@ -236,10 +235,31 @@ def handle_group_selection(message, user_data):
             degree=user_data["degree"],
             group=user_data["group"]
         )
-        bot.send_message(message.chat.id, f"Now, use /schedule to view your group's schedule or type / to see available options.")
+        bot.send_message(message.chat.id, f"Now, use /schedule to view your group's schedule or type / to see available options.", reply_markup=telebot.types.ReplyKeyboardRemove())
     else:
         bot.send_message(message.chat.id, "Invalid group. Please select again.")
         show_groups(message, university, degree, user_data)
+
+@bot.message_handler(commands=['weekly'])
+def get_weekly_schedule(message):
+    user_id = str(message.chat.id)
+    
+    if user_id not in users_data:
+        bot.send_message(message.chat.id, "You are not registered yet. Use /start to register.", reply_markup=telebot.types.ReplyKeyboardRemove())
+        return
+    
+    user_info = users_data[user_id]
+    university = user_info['university']
+    degree = user_info['degree']
+    group = user_info['group']
+    
+    weekly_schedule = {}
+    for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']:
+        day_schedule = schedules.get(university, {}).get("degrees", {}).get(degree, {}).get("groups", {}).get(group, {}).get(day, {})
+        weekly_schedule[day] = day_schedule
+
+    image_data = generate_weekly_schedule_image(weekly_schedule, university, degree, group)
+    bot.send_photo(message.chat.id, image_data)
 
 @bot.message_handler(commands=['weekly'])
 def get_weekly_schedule(message):
@@ -274,13 +294,11 @@ def generate_weekly_schedule_image(weekly_schedule, university, degree, group):
     
     img = Image.new('RGB', (image_width, image_height), color=(255, 255, 255))
     draw = ImageDraw.Draw(img)
+    base_dir = os.path.dirname(__file__)  # Gets the directory of the current script
+    font_path = os.path.join(base_dir, "fonts", "RobotoSlab-Regular.ttf")
     
-    try:
-        font = ImageFont.truetype("arial.ttf", 20)
-        header_font = ImageFont.truetype("arial.ttf", 30)
-    except IOError:
-        font = ImageFont.load_default()
-        header_font = ImageFont.load_default()
+    font = ImageFont.truetype(font_path, 22)
+    header_font = ImageFont.truetype(font_path, 36)
 
     # Draw header
     header_text = f"University: {university} | Degree: {degree} | Group: {group}"
@@ -312,8 +330,9 @@ def generate_weekly_schedule_image(weekly_schedule, university, degree, group):
         for i, day in enumerate(days):
             lessons = weekly_schedule.get(day, {}).get(time_slot, [])
             if lessons:
+                lesson_text = lessons[0]
                 cell_rect = ((i + 1) * cell_width, table_top + (j + 1) * cell_height, (i + 2) * cell_width, table_top + (j + 2) * cell_height)
-                draw_wrapped_text(draw, lessons, cell_rect, font)
+                draw_wrapped_text(draw, lesson_text, cell_rect, font)
 
     img_byte_array = io.BytesIO()
     img.save(img_byte_array, format='PNG')
@@ -330,37 +349,39 @@ def draw_centered_text(draw, text, rect, font, fill=(0, 0, 0)):
     y = (y2 - y1 - text_height) / 2 + y1
     draw.text((x, y), text, font=font, fill=fill)
 
-def draw_wrapped_text(draw, lessons, rect, font, fill=(0, 0, 0)):
+def draw_wrapped_text(draw, text, rect, font, fill=(0, 0, 0), line_spacing=20):
     x1, y1, x2, y2 = rect
     max_width = x2 - x1
-    
+    line_height = font.getbbox('A')[1] + line_spacing  # Add line spacing to line height
     lines = []
-    current_line = []
     
-    for word in lessons:        
-        test_line = ' '.join(current_line + [word])
-        bbox = draw.textbbox((0, 0), test_line, font=font)
-        text_width = bbox[2] - bbox[0]
+    # Split text into lines based on width
+    for line in text.split('\n'):
+        words = line.split()
+        current_line = words[0] if len(words) != 0 else ""
+        for word in words[1:]:
+            bbox = draw.textbbox((0, 0), current_line + ' ' + word, font=font)
+            if bbox[2] - bbox[0] <= max_width:
+                current_line += ' ' + word
+            else:
+                lines.append(current_line)
+                current_line = word
+        lines.append(current_line)
 
-        word = "" if "none" in word else word
-        if text_width <= max_width:
-            current_line.append(word)
-        else:
-            lines.append(' '.join(current_line))
-            current_line = [word]
-    
-    if current_line:
-        lines.append(' '.join(current_line))
+    # Calculate the starting Y position to center the text
+    total_height = line_height * len(lines)
+    max_lines = (y2 - y1) // line_height  # Number of lines that can fit in the cell
+    if total_height > (y2 - y1):
+        lines = lines[:max_lines]  # Limit the lines to fit in the cell
 
-    line_height = draw.textbbox((0, 0), 'A', font=font)[3]
-    total_text_height = len(lines) * line_height
-    y = y1 + (y2 - y1 - total_text_height) / 2
+    # Center the text vertically within the available space
+    y = y1 + (y2 - y1 - line_height * len(lines)) / 2
+
     for line in lines:
         bbox = draw.textbbox((0, 0), line, font=font)
-        text_width = bbox[2] - bbox[0]
-        x = x1 + (max_width - text_width) / 2
+        w = bbox[2] - bbox[0]
+        x = x1 + (max_width - w) / 2  # Center the text horizontally
         draw.text((x, y), line, font=font, fill=fill)
-        y += line_height
-
+        y += line_height  # Move down for the next line
 
 bot.polling()
