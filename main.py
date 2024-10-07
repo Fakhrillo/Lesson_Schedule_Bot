@@ -87,26 +87,27 @@ def get_schedule(message):
     group_schedule = schedules.get(university, {}).get("degrees", {}).get(degree, {}).get("groups", {}).get(group, {}).get(today)
     
     if group_schedule:
-        schedule_message = f"Schedule for *{today}*:\n\n"
-        schedule_message += f"University: *{university}*\n"
-        schedule_message += f"Degree: *{degree}*\n"
-        schedule_message += f"Group: *{group}*\n\n"
+        schedule_message = f"📅 Schedule for *{today}*:\n\n"
+        schedule_message += f"🏫 University: *{university}*\n"
+        schedule_message += f"🎓 Degree: *{degree}*\n"
+        schedule_message += f"👥 Group: *{group}*\n\n"
         schedule_message += "*Lessons:*\n"
         
         for time_slot, lesson_info in group_schedule.items():
-            schedule_message += f"*{time_slot}*\n"
-            schedule_message += f"Subject: {lesson_info[0]}\n"
+            schedule_message += f"🕒 *{time_slot}*\n"
+            schedule_message += f"📘 Subject: {lesson_info[0]}\n"
             if len(lesson_info) > 1:
                 if lesson_info[2].strip().lower() == "none":
-                    schedule_message += f"Teacher: {lesson_info[1].strip()}\n"
+                    schedule_message += f"👤 Teacher: {lesson_info[1].strip()}\n"
                 else:
-                    schedule_message += f"Teacher: {lesson_info[1].strip()} ({lesson_info[2].strip()})\n"
+                    schedule_message += f"👤 Teacher: {lesson_info[1].strip()} ({lesson_info[2].strip()})\n"
 
             schedule_message += "\n"
         
         bot.send_message(message.chat.id, schedule_message, parse_mode="Markdown")
     else:
-        bot.send_message(message.chat.id, f"Schedule for *{today}*:\n\nUniversity: *{university}*\nDegree: *{degree}*\nGroup: *{group}*\nLessons: No lessons scheduled for today.", parse_mode="Markdown")
+        return f"📅 Schedule for *{today}*:\n\n🏫 University: *{university}*\n🎓 Degree: *{degree}*\n👥 Group: *{group}*\n\nNo lessons scheduled for today."
+
 
 @bot.message_handler(commands=["change_group"])
 def change_group(message):
