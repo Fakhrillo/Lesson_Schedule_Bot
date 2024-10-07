@@ -108,7 +108,6 @@ def get_schedule(message):
     else:
         return f"📅 Schedule for *{today}*:\n\n🏫 University: *{university}*\n🎓 Degree: *{degree}*\n👥 Group: *{group}*\n\nNo lessons scheduled for today."
 
-
 @bot.message_handler(commands=["change_group"])
 def change_group(message):
     user_name = message.from_user.first_name
@@ -204,7 +203,7 @@ def handle_replies(message):
         except Exception as e:
             bot.reply_to(message, f"Sorry, something went wrong. I could not send the message to the user:\n{e}")
     else:
-        bot.reply_to(message, "You can only reply to messages sent by the bot.")
+        pass
 
 @bot.message_handler(commands=["daily_reminder"])
 def daily_reminder(message):

@@ -1,7 +1,4 @@
-import json
-import time
-import requests
-import os
+import json, time, requests, os
 from datetime import datetime
 from environs import Env
 from requests.exceptions import RequestException
