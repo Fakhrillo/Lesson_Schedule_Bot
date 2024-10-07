@@ -98,6 +98,8 @@ def check_for_sheet_changes():
 
     if changes:
         send_message(env("GROUP_ID"), f"*{changes}*")
+    else:
+        send_message(env("GROUP_ID"), f"No changes found")
 
 
 while True:
