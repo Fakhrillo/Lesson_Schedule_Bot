@@ -71,7 +71,10 @@ def check_notifications():
             for user_id, notify_time in data.items():
                 if notify_time == now:
                     message = get_schedule(user_id)
-                    send_message(user_id, message)
+                    try:
+                        send_message(user_id, message)
+                    except:
+                        pass
         except FileNotFoundError:
             pass
 
