@@ -71,6 +71,12 @@ def start(message):
         bot.send_message(message.chat.id, f"Welcome {user_name}! Please select your university.")
         show_universities(message)
 
+@bot.message_handler(commands=['count'])
+def count(message):
+    user_id = message.from_user.id
+    if user_id in ADMINS:
+        users_data = load_data(USERS_DATA_FILE)
+        bot.send_message(message.chat.id, f"Total users registered: {len(users_data)}")
 @bot.message_handler(commands=['schedule'])
 def get_schedule(message):
     user_id = str(message.chat.id)
