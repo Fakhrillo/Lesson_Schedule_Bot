@@ -465,8 +465,8 @@ def generate_weekly_schedule_image(weekly_schedule, university, degree, group):
     cell_width = 250
     cell_height = 120
     header_height = 100
-    num_days = 5
-    num_slots = 6
+    num_days = 6
+    num_slots = 7
 
     image_width = (num_days + 1) * cell_width
     image_height = (num_slots + 1) * cell_height + header_height
