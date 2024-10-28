@@ -502,7 +502,7 @@ def generate_weekly_schedule_image(weekly_schedule, university, degree, group):
         draw_centered_text(draw, day, ((i + 1) * cell_width, table_top, (i + 2) * cell_width, table_top + cell_height), font)
 
     # Fill in time slots
-    time_slots = ['9:00-10:20', '10:30-11:50', '12:00-13:20', '14:20-15:40', '15:50-17:10', '17:20-18:40']
+    time_slots = ['9:00-10:20', '10:30-11:50', '12:00-13:20', '14:20-15:40', '15:50-17:10', '17:20-18:40', '18:50-20:10']
     for j, time_slot in enumerate(time_slots):
         draw_centered_text(draw, time_slot, (0, table_top + (j + 1) * cell_height, cell_width, table_top + (j + 2) * cell_height), font)
         
