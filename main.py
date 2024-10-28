@@ -76,7 +76,8 @@ def count(message):
     user_id = message.from_user.id
     if user_id in ADMINS:
         users_data = load_data(USERS_DATA_FILE)
-        bot.send_message(message.chat.id, f"Total users registered: {len(users_data)}")
+        schedules = load_data(SCHEDULE_TIMES_FILE)
+        bot.send_message(message.chat.id, f"Total users registered: {len(users_data)}\nTotal users scheduled: {len(schedules)}")
 @bot.message_handler(commands=['schedule'])
 def get_schedule(message):
     user_id = str(message.chat.id)
