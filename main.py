@@ -348,7 +348,7 @@ def parse_excel_to_json(file_path):
         if pd.notna(group) and pd.notna(time_slot):
             if group not in parsed_schedule:
                 parsed_schedule[group] = {}
-            for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']:
+            for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']:
                 lesson_info = row[day]
                 if pd.notna(lesson_info):
                     if day not in parsed_schedule[group]:
@@ -454,7 +454,7 @@ def get_weekly_schedule(message):
     group = user_info['group']
     
     weekly_schedule = {}
-    for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']:
+    for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']:
         day_schedule = schedules.get(university, {}).get("degrees", {}).get(degree, {}).get("groups", {}).get(group, {}).get(day, {})
         weekly_schedule[day] = day_schedule
 
@@ -497,7 +497,7 @@ def generate_weekly_schedule_image(weekly_schedule, university, degree, group):
             draw.rectangle([top_left, bottom_right], outline=(0, 0, 0), width=2)
 
     # Fill in days
-    days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+    days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     for i, day in enumerate(days):
         draw_centered_text(draw, day, ((i + 1) * cell_width, table_top, (i + 2) * cell_width, table_top + cell_height), font)
 
